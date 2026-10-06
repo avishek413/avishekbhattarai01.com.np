@@ -255,7 +255,7 @@ function Modal({ item, onClose }) {
         )}
 
         {!["S", "E", "K"].includes(item.letter) && (
-          <div className="placeholder-card">DROP YOUR REAL CONTENT HERE <span>↗</span></div>
+          <div className="placeholder-card">CLASS 12 COMPUTER STUDENT <span>↗</span></div>
         )}
       </aside>
     </div>
