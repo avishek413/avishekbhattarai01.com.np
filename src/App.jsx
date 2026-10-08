@@ -309,6 +309,7 @@ function Modal({ item, onClose }) {
             <input placeholder="Your name" />
             <input placeholder="Email" type="email" />
             <textarea placeholder="Tell me about the idea..." rows="5" />
+            <span>Contact on <a href="mailto:info@khagendrabhattarai01.com.np">info@khagendrabhattarai01.com.np</a></span>
             <button type="submit">SEND MESSAGE ↗</button>
           </form>
         )}
@@ -369,7 +370,10 @@ export default function App() {
       <footer>
         <span>© 2026 AVISHEK</span>
         <span>SCROLL / MOVE TO NAVIGATE</span>
-        <span>NEPAL · WORLDWIDE</span>
+        <div className="footer-location">
+          <span>NEPAL · WORLDWIDE</span>
+          <a href="mailto:info@khagendrabhattarai01.com.np">info@khagendrabhattarai01.com.np</a>
+        </div>
       </footer>
 
       <Modal item={active} onClose={close} />
