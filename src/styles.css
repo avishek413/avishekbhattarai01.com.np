@@ -137,15 +137,30 @@ footer {
 @keyframes slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
 @media (max-width: 760px) {
-  .topbar { left: 18px; right: 18px; top: 18px; }
+  body { overflow-x: hidden; overflow-y: auto; }
+  .app {
+    height: 700vh;
+    min-height: 700vh;
+    overflow: visible;
+  }
+  .app::after { position: fixed; }
+  .canvas-wrap { position: fixed; }
+  .topbar { position: fixed; left: 18px; right: 18px; top: 18px; }
   .status { display: none; }
-  .hero-copy { left: 18px; top: 88px; bottom: auto; max-width: 175px; }
+  .hero-copy {
+    position: fixed;
+    left: 18px;
+    top: 88px;
+    bottom: auto;
+    max-width: 175px;
+  }
   .eyebrow { display: none; }
   .hero-copy h1 { font-size: 28px; line-height: .95; }
   .hint { margin-top: 12px; font-size: 8px; }
   .hover-label { display: none; }
-  footer { left: 18px; right: 18px; font-size: 8px; }
+  footer { position: fixed; left: 18px; right: 18px; font-size: 8px; }
   footer span:nth-child(2) { display: none; }
+  .modal-backdrop { position: fixed; }
   .drawer { padding: 62px 28px 40px; }
   .drawer h2 { font-size: 34px; }
   .drawer-letter { font-size: 110px; }

@@ -14,9 +14,13 @@ const NAV = [
   { letter: "K", title: "Knock / Kontak", kicker: "07 / CONTACT", body: "Have an idea, collaboration or opportunity? Send a message and let’s build something memorable." }
 ];
 const WIRE_HEIGHT = 3.5;
+const MOBILE_LETTER_GAP = 3;
+const MOBILE_FIRST_LETTER_Y = 0;
+const MOBILE_CAMERA_START_INSET = 4;
+const MOBILE_CAMERA_END_INSET = 3.5;
 
 function CameraRig({ target, onArrive }) {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const targetPos = useRef(new THREE.Vector3(0, 0, 14));
   const lookAt = useRef(new THREE.Vector3(0, 0, 0));
   const done = useRef(false);
@@ -26,9 +30,31 @@ function CameraRig({ target, onArrive }) {
     const my = state.pointer.y * 0.35;
 
     if (!target) {
-      const desired = new THREE.Vector3(mx, my, 14);
+      const isMobile = size.width <= 760;
+      const scrollRange = Math.max(
+        1,
+        document.documentElement.scrollHeight - window.innerHeight
+      );
+      const scrollProgress = isMobile
+        ? THREE.MathUtils.clamp(window.scrollY / scrollRange, 0, 1)
+        : 0;
+      const mobileChainLength = MOBILE_LETTER_GAP * (NAV.length - 1);
+      const mobileCameraStartY = MOBILE_FIRST_LETTER_Y - MOBILE_CAMERA_START_INSET;
+      const mobileCameraEndY = MOBILE_FIRST_LETTER_Y
+        - mobileChainLength
+        + MOBILE_CAMERA_END_INSET;
+      const mobileCameraY = THREE.MathUtils.lerp(
+        mobileCameraStartY,
+        mobileCameraEndY,
+        scrollProgress
+      );
+      const desired = new THREE.Vector3(
+        mx,
+        isMobile ? mobileCameraY + my : my,
+        14
+      );
       camera.position.lerp(desired, 1 - Math.pow(0.001, delta));
-      camera.lookAt(0, 0, 0);
+      camera.lookAt(0, isMobile ? mobileCameraY : 0, 0);
       return;
     }
 
@@ -154,7 +180,7 @@ function WireField({ positions, isMobile }) {
           ? 0
           : Math.sin(time * 0.75 + (index - 1) * 0.9) * 0.28;
         const top = index === 0
-          ? 5.9
+          ? MOBILE_FIRST_LETTER_Y + 1.25
           : positions[index - 1][1] + previousBob - 0.48;
         const bottom = position[1] + bob + 0.48;
         spring.position.set(position[0], top, position[2] - 0.4);
@@ -182,7 +208,7 @@ function WireField({ positions, isMobile }) {
           ref={(mesh) => { springs.current[index] = mesh; }}
           position={[
             position[0],
-            isMobile ? 5.9 : WIRE_HEIGHT,
+            isMobile ? MOBILE_FIRST_LETTER_Y + 1.25 : WIRE_HEIGHT,
             position[2] - 0.4
           ]}
           geometry={springGeometry}
@@ -197,7 +223,11 @@ function LetterField({ active, onHover, onSelect }) {
   const { size } = useThree();
   const isMobile = size.width <= 760;
   const positions = useMemo(() => isMobile
-    ? NAV.map((_, index) => [1.35, 4.65 - index * 1.55, 0])
+    ? NAV.map((_, index) => [
+      1.35,
+      MOBILE_FIRST_LETTER_Y - index * MOBILE_LETTER_GAP,
+      0
+    ])
     : [
       [-6.0,  1.7,  0.0],
       [-3.9, -1.5,  0.4],
