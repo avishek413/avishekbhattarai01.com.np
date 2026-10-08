@@ -139,8 +139,11 @@ footer {
 @media (max-width: 760px) {
   .topbar { left: 18px; right: 18px; top: 18px; }
   .status { display: none; }
-  .hero-copy { left: 18px; bottom: 55px; }
-  .hero-copy h1 { font-size: 48px; }
+  .hero-copy { left: 18px; top: 88px; bottom: auto; max-width: 175px; }
+  .eyebrow { display: none; }
+  .hero-copy h1 { font-size: 28px; line-height: .95; }
+  .hint { margin-top: 12px; font-size: 8px; }
+  .hover-label { display: none; }
   footer { left: 18px; right: 18px; font-size: 8px; }
   footer span:nth-child(2) { display: none; }
   .drawer { padding: 62px 28px 40px; }

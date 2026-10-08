@@ -59,7 +59,7 @@ function Particles() {
   );
 }
 
-function Letter({ item, index, position, active, onHover, onClick }) {
+function Letter({ item, index, position, active, onHover, onClick, fontSize }) {
   const ref = useRef();
   const [hovered, setHovered] = useState(false);
 
@@ -83,7 +83,7 @@ function Letter({ item, index, position, active, onHover, onClick }) {
     >
       <Center>
         <Text
-          fontSize={2.65}
+          fontSize={fontSize}
           maxWidth={2}
           anchorX="center"
           anchorY="middle"
@@ -113,26 +113,32 @@ function Letter({ item, index, position, active, onHover, onClick }) {
   );
 }
 
-function WireField({ positions }) {
+function WireField({ positions, isMobile }) {
   const springs = useRef([]);
   const springGeometry = useMemo(() => {
     const points = Array.from({ length: 49 }, (_, index) => {
       const t = index / 48;
-      const angle = t * Math.PI * 12;
-      const radius = 0.045 * Math.sin(Math.PI * t);
+      const angle = t * Math.PI * (isMobile ? 6 : 12);
+      const radius = (isMobile ? 0.075 : 0.045) * Math.sin(Math.PI * t);
       return new THREE.Vector3(Math.cos(angle) * radius, -t, Math.sin(angle) * radius);
     });
-    return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 96, 0.012, 5, false);
-  }, []);
+    return new THREE.TubeGeometry(
+      new THREE.CatmullRomCurve3(points),
+      96,
+      isMobile ? 0.02 : 0.012,
+      5,
+      false
+    );
+  }, [isMobile]);
   const material = useMemo(
     () => new THREE.MeshStandardMaterial({
-      color: "#9ba2bd",
+      color: isMobile ? "#d9dcff" : "#9ba2bd",
       metalness: 0.82,
       roughness: 0.3,
-      emissive: "#181b2b",
-      emissiveIntensity: 0.35
+      emissive: isMobile ? "#555b82" : "#181b2b",
+      emissiveIntensity: isMobile ? 0.8 : 0.35
     }),
-    []
+    [isMobile]
   );
   const wireGeometry = useMemo(() => new THREE.CylinderGeometry(0.018, 0.018, 1, 8), []);
 
@@ -143,24 +149,42 @@ function WireField({ positions }) {
       const spring = springs.current[index];
       if (!spring) return;
       const bob = Math.sin(time * 0.75 + index * 0.9) * 0.28;
-      spring.scale.y = WIRE_HEIGHT - position[1] - bob - 1.25;
+      if (isMobile) {
+        const previousBob = index === 0
+          ? 0
+          : Math.sin(time * 0.75 + (index - 1) * 0.9) * 0.28;
+        const top = index === 0
+          ? 5.9
+          : positions[index - 1][1] + previousBob - 0.48;
+        const bottom = position[1] + bob + 0.48;
+        spring.position.set(position[0], top, position[2] - 0.4);
+        spring.scale.y = Math.max(0.05, top - bottom);
+      } else {
+        spring.scale.y = WIRE_HEIGHT - position[1] - bob - 1.25;
+      }
     });
   });
 
   return (
     <group>
-      <mesh
-        position={[0, WIRE_HEIGHT, -0.4]}
-        rotation={[0, 0, Math.PI / 2]}
-        scale={[1, 14, 1]}
-        geometry={wireGeometry}
-        material={material}
-      />
+      {!isMobile && (
+        <mesh
+          position={[0, WIRE_HEIGHT, -0.4]}
+          rotation={[0, 0, Math.PI / 2]}
+          scale={[1, 14, 1]}
+          geometry={wireGeometry}
+          material={material}
+        />
+      )}
       {positions.map((position, index) => (
         <mesh
           key={index}
           ref={(mesh) => { springs.current[index] = mesh; }}
-          position={[position[0], WIRE_HEIGHT, position[2] - 0.4]}
+          position={[
+            position[0],
+            isMobile ? 5.9 : WIRE_HEIGHT,
+            position[2] - 0.4
+          ]}
           geometry={springGeometry}
           material={material}
         />
@@ -170,19 +194,23 @@ function WireField({ positions }) {
 }
 
 function LetterField({ active, onHover, onSelect }) {
-  const positions = useMemo(() => [
-    [-6.0,  1.7,  0.0],
-    [-3.9, -1.5,  0.4],
-    [-1.8,  1.8, -0.2],
-    [ 0.2, -1.4,  0.0],
-    [ 2.2,  1.7,  0.3],
-    [ 4.2, -1.3, -0.1],
-    [ 6.2,  1.4,  0.2]
-  ], []);
+  const { size } = useThree();
+  const isMobile = size.width <= 760;
+  const positions = useMemo(() => isMobile
+    ? NAV.map((_, index) => [1.35, 4.65 - index * 1.55, 0])
+    : [
+      [-6.0,  1.7,  0.0],
+      [-3.9, -1.5,  0.4],
+      [-1.8,  1.8, -0.2],
+      [ 0.2, -1.4,  0.0],
+      [ 2.2,  1.7,  0.3],
+      [ 4.2, -1.3, -0.1],
+      [ 6.2,  1.4,  0.2]
+    ], [isMobile]);
 
   return (
     <>
-      <WireField positions={positions} />
+      <WireField positions={positions} isMobile={isMobile} />
       {NAV.map((item, i) => (
         <Letter
           key={item.letter}
@@ -190,6 +218,7 @@ function LetterField({ active, onHover, onSelect }) {
           index={i}
           position={positions[i]}
           active={active?.letter === item.letter}
+          fontSize={isMobile ? 1.65 : 2.65}
           onHover={onHover}
           onClick={onSelect}
         />
